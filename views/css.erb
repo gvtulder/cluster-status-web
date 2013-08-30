@@ -2,7 +2,6 @@
     body {
       font-family: sans-serif;
       font-size: 11px;
-      overflow-x: hidden;
     }
     table, tr, td, th {
       font-size: 100%
@@ -13,7 +12,13 @@
       word-wrap: none;
       white-space: nowrap;
     }
-    td {
+    table.legend {
+      margin-bottom: 1.2em;
+    }
+    table.legend td {
+      padding-right: 10px;
+    }
+    table.stats td {
       max-width: 150px;
       overflow-x: hidden;
     }
@@ -23,17 +28,21 @@
     table .r {
       text-align: right;
     }
-    td.mbar {
+    table.stats td.mbar {
       max-width: none;
-      overflow-x: hidden;
     }
-    span.mbar {
-      background: #aaa;
+    span.mbar-cur {
+      background: #777;
+      display: inline-block;
+      height: 6px;
+    }
+    span.mbar-max {
+      background: #bbb;
       display: inline-block;
       height: 6px;
     }
     span.mbar-req {
-      background: #a00;
+      background: #b00;
       display: inline-block;
       height: 6px;
     }
