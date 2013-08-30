@@ -1,0 +1,17 @@
+<html>
+
+<head>
+  <title>Memory stats</title>
+  <%= erb :css %>
+</head>
+
+<body>
+  <h1>Memory stats</h1>
+  <ul>
+  <% dates.reverse.each do |date| %>
+    <li><a href="<%= date %>/"><%= date %></a></li>
+  <% end %>
+  </ul>
+</body>
+</html>
+

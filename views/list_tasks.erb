@@ -1,0 +1,73 @@
+<html>
+
+<head>
+  <title>Memory stats</title>
+  <%= erb :css %>
+</head>
+
+<body>
+  <% if current_job %>
+    <p><a href="/">Index</a> - <a href="/<%= date %>/"><%= date %></a> - <%= current_job %></p>
+    <h1>Memory stats for job <%= current_job %> on <%= date %></h1>
+    <p>Grey bar: VMemMax (maximum memory used), red bar: VMemRequested - VMemMax (memory claimed but never used)</p>
+    <p>Memory used by this job over time.</p>
+  <% else %>
+    <p><a href="/">Index</a> - <%= date %></p>
+    <h1>Memory stats <%= date %></h1>
+    <p>Grey bar: VMemMax (maximum memory used), red bar: VMemRequested - VMemMax (memory claimed but never used)</p>
+    <p>Click a job ID to look at memory usage over time.</p>
+  <% end %>
+
+  <table cellspacing="0">
+    <thead>
+      <tr>
+        <%=
+          %w{ Time Job Owner Name VMemRequested VMemCurrent VMemMax }.map do |i|
+            "<th>#{ i }</th>"
+          end.join
+        %>
+      </tr>
+    </thead>
+    <tbody>
+      <%
+        lines = []
+        if current_job
+          stats[current_job].each do |job_stat|
+            lines << [ current_job, job_stat ]
+          end
+        else
+          lines = stats
+        end
+        lines.each do |job_id, job|
+      %>
+        <tr>
+          <td><%= Time.at(job[0].to_i).localtime.strftime("%Y-%m-%d %H:%M:%S") %></td>
+          <% if current_job %>
+            <td><%=h job_id %></td>
+          <% else %>
+            <td><a href="<%=h job_id %>"><%=h job_id %></a></td>
+          <% end %>
+          <td><%=h job[3] %></td>
+          <td><%=h job[4] %></td>
+          <%=
+            # memory
+            [ 5, 10, 11 ].map do |i|
+              "<td class=\"r\">#{ format_mem(job[i]) } MB</td>"
+            end.join
+          %>
+          <td class="mbar"><nobr><%
+            # vmem max
+            vmem_max_pix = (200 * (job[11].to_f / (1024*1024*1024*10))).to_i
+            vmem_req_pix = (200 * (job[5].to_f / (1024*1024*1024*10))).to_i
+            %><span class="mbar" style="width: <%= vmem_max_pix %>px"></span><%
+            if vmem_req_pix > vmem_max_pix
+              %><span class="mbar-req" style="width: <%= vmem_req_pix - vmem_max_pix %>px"></span><%
+            end
+          %></nobr></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</body>
+</html>
+
