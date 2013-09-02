@@ -1,5 +1,7 @@
 require "sinatra"
 
+set :environment, :production
+
 class Stats
   STATS = %w{ timestamp job_number task_number owner job_name vmem_request cpu mem io iow vmem maxvmem }
   #              0          1         2         3      4         5          6   7  8  9   10    11
@@ -19,7 +21,7 @@ class Stats
   end
 
   def [](job_id)
-    @all_job_stats[job_id].reverse
+    JobStats.new(job_id, (@all_job_stats[job_id] || []))
   end
 
   def each
@@ -50,6 +52,21 @@ class Stats
     @all_job_stats = all_job_stats
     @last_job_stats = last_job_stats
   end
+
+  class JobStats
+    include Enumerable
+
+    def initialize(job_id, stats)
+      @job_id = job_id
+      @stats = stats
+    end
+
+    def each
+      @stats.reverse_each do |job|
+        yield @job_id, job
+      end
+    end
+  end
 end
 
 def format_mem(mem)
@@ -64,6 +81,15 @@ helpers do
   def h(text)
     Rack::Utils.escape_html(text)
   end
+end
+
+def previous_date(dt)
+  dt = (Date.parse(dt) - 1).strftime("%Y-%m-%d")
+  File.exists?("csv-mem/#{ dt }.csv") ? dt : nil
+end
+def next_date(dt)
+  dt = (Date.parse(dt) + 1).strftime("%Y-%m-%d")
+  File.exists?("csv-mem/#{ dt }.csv") ? dt : nil
 end
 
 STATS_CACHE = Hash.new do |h,dt|

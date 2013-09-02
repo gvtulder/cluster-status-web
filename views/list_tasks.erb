@@ -16,11 +16,44 @@
     <p>Click a job ID to look at memory usage over time.</p>
   <% end %>
 
+  <% if current_job %>
+    <p class="mem-chart">
+      <%=
+        mems = (current_job ? stats[current_job] : stats).map do |job_id, job|
+          # cur           max           req
+          [ job[10].to_f, job[11].to_f, job[5].to_f ]
+        end
+
+        max_mem = mems.map{|a|a.max}.max || 1
+        scaling = 50 / max_mem
+        width = [ 1, [ 400 / mems.size, 5 ].min ].max rescue 1
+
+        mems.reverse.map do |cur, max, req|
+          cur = (cur * scaling).to_i
+          max = (max * scaling).to_i - cur
+          req = (req * scaling).to_i - (max + cur)
+          "<span class=\"entry\" style=\"width:#{width}px;\">" +
+          "<span class=\"mbar-req\" style=\"width:#{width}px; height:#{ req }px\"></span>" +
+          "<span class=\"mbar-max\" style=\"width:#{width}px; height:#{ max }px\"></span>" +
+          "<span class=\"mbar-cur\" style=\"width:#{width}px; height:#{ cur }px\"></span>" +
+          "</span>"
+        end.join
+      %>
+    </p>
+  <% end %>
+
   <table cellspacing="0" class="legend">
     <tr><td><span class="mbar-cur" style="width: 50px"></span></td><td>VMemCurrent</td><td>current memory usage</td></tr>
     <tr><td><span class="mbar-max" style="width: 50px"></span></td><td>VMemMax</td><td>maximum memory usage</td></tr>
     <tr><td><span class="mbar-req" style="width: 50px"></span></td><td>VMemRequested</td><td>requested memory</td></tr>
   </table>
+
+  <% if current_job and next_date(date) %>
+    <p><a href="/<%= next_date(date) %>/<%=h current_job %>">Look for this job on the next day</a></p>
+  <% end %>
+  <% if current_job and previous_date(date) %>
+    <p><a href="/<%= previous_date(date) %>/<%=h current_job %>">Look for this job on the previous day</a></p>
+  <% end %>
 
   <table cellspacing="0" class="stats">
     <thead>
@@ -34,15 +67,7 @@
     </thead>
     <tbody>
       <%
-        lines = []
-        if current_job
-          stats[current_job].each do |job_stat|
-            lines << [ current_job, job_stat ]
-          end
-        else
-          lines = stats
-        end
-        lines.each do |job_id, job|
+        (current_job ? stats[current_job] : stats).each do |job_id, job|
       %>
         <tr>
           <td><%= Time.at(job[0].to_i).localtime.strftime("%Y-%m-%d %H:%M:%S") %></td>
@@ -78,6 +103,9 @@
       <% end %>
     </tbody>
   </table>
+  <% if current_job and previous_date(date) %>
+    <p><a href="/<%= previous_date(date) %>/<%=h current_job %>">Look for this job on the previous day</a></p>
+  <% end %>
 </body>
 </html>
 
