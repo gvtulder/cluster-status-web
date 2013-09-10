@@ -36,6 +36,7 @@ def print_job_stats
       job_data = {
         "JB_owner" => djob_info.text_at_xpath("JB_owner"),
         "JB_job_name" => djob_info.text_at_xpath("JB_job_name").gsub(/\s+/, ""),
+        "JB_project" => (djob_info.text_at_xpath("JB_project") || "").gsub(/\s+/, ""),
         "vmem_request" => djob_info.text_at_xpath("JB_hard_resource_list/qstat_l_requests[CE_name='h_vmem']/CE_doubleval")
       }
       tasks = {}
@@ -56,7 +57,7 @@ def print_job_stats
   n_tasks = jobs.values.inject(0){|s,j|s+j["tasks"].size}
   $stderr.puts "done. Found #{ n_tasks } task#{ "s" unless n_tasks==1 }."
 
-  puts [ "timestamp", "job_number", "task_number", "owner", "job_name", "vmem_request", *USAGES ].join("\t")
+  puts [ "timestamp", "job_number", "task_number", "owner", "job_name", "vmem_request", *USAGES, "job_project" ].join("\t")
   jobs.each do |job_number, job_data|
     job_data["tasks"].each do |task_number, task_data|
       puts [Time.now.to_i,
@@ -65,7 +66,9 @@ def print_job_stats
             job_data["JB_owner"],
             job_data["JB_job_name"],
             job_data["vmem_request"],
-            *USAGES.map{|ua|task_data[ua]}].join("\t")
+            *USAGES.map{|ua|task_data[ua]},
+            job_data["JB_project"]
+           ].join("\t")
     end
   end
 

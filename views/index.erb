@@ -8,6 +8,9 @@
 <body>
   <h1>Memory stats</h1>
   <ul>
+    <li><a href="/running/">Current jobs</a></li>
+  </ul>
+  <ul>
   <% dates.reverse.each do |date| %>
     <li><a href="<%= date %>/"><%= date %></a></li>
   <% end %>
