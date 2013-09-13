@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Cluster queues</title>
+    <link rel="stylesheet" type="text/css" href="/reset.css" />
+    <link rel="stylesheet" type="text/css" href="/cluster.css" />
+    <link rel="stylesheet" type="text/css" href="/user-colors.css" />
+  </head>
+
+  <body class="all-owners">
+
+    <div id="header">
+      <p><span>Queues</span><span id="timestamp">Loading...</span></p>
+      <p class="nav"><a href="/memory">Memory</a><a href="/matlab">Matlab</a></p>
+      <ul id="owner-toggle"></ul>
+    </div>
+
+    <table cellspacing="0" class="queues">
+      <tbody>
+        <tr id="queued-jobs" class="queued-jobs"></tr>
+        <tr id="running-jobs" class="running-jobs"></tr>
+        <tr id="finished-jobs" class="finished-jobs"></tr>
+      </tbody>
+    </table>
+
+    <script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
+    <script type="text/javascript" src="/queues.js"></script>
+
+  </body>
+
+</html>
+

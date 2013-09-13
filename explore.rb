@@ -1,95 +1,14 @@
+require "rubygems"
 require "sinatra"
+require "nokogiri"
+require "time"
+require "json"
 
 set :environment, :production
 
-class Stats
-  STATS = %w{ timestamp job_number task_number owner job_name vmem_request cpu mem io iow vmem maxvmem job_project }
-  #              0          1         2         3      4         5          6   7  8  9   10    11       12
-
-  def initialize(filename)
-    @filename = filename
-    @last_pos = 0
-    @all_job_stats = Hash.new{|h,k|h[k] = []}
-    @last_job_stats = {}
-    load_from_file
-  end
-
-  def stale?
-    File.mtime(@filename) > @timestamp
-  end
-
-  def refresh
-    load_from_file if stale?
-    self
-  end
-
-  def [](job_id)
-    JobStats.new(job_id, (@all_job_stats[job_id] || []))
-  end
-
-  def current_jobs
-    latest_date = @last_job_stats.map do |job_id, job|
-      job[0]
-    end.max
-    jobs = []
-    self.each do |job_id, job|
-      jobs << [job_id, job] if job[0] == latest_date
-    end.sort_by do |job_id, job|
-      job_id.split(".").map(&:to_i)
-    end
-    jobs
-  end
-
-  def each
-    @last_job_stats.sort_by do |job_id, job|
-      [ job[0], *job_id.split(".").map(&:to_i) ]
-    end.reverse_each do |job_id, job|
-      yield job_id, job
-    end
-  end
-
-  private
-
-  def load_from_file
-    @timestamp = File.mtime(@filename)
-
-    $stderr.puts "Parsing #{ @filename } from #{ @last_pos }"
-
-    File.open(@filename) do |f|
-      f.pos = @last_pos
-      while line = f.gets
-        cur_pos = f.pos
-        if line.end_with?("\n")
-          @last_pos = cur_pos
-          parts = line.strip.split("\t")
-          if parts[0] =~ /^[0-9]+$/
-            # line with a job
-            job_id = "#{ parts[1] }.#{ parts[2] }"
-            @all_job_stats[job_id] << parts
-            @last_job_stats[job_id] = parts
-          end
-        end
-      end
-    end
-
-    $stderr.puts "Parsed #{ @filename } up to #{ @last_pos }"
-  end
-
-  class JobStats
-    include Enumerable
-
-    def initialize(job_id, stats)
-      @job_id = job_id
-      @stats = stats
-    end
-
-    def each
-      @stats.reverse_each do |job|
-        yield @job_id, job
-      end
-    end
-  end
-end
+require "./qstat_memstats"
+require "./qstat_queue"
+require "./matlab"
 
 def format_mem(mem)
   (mem.to_f.to_i / (1024*1024)).to_s.reverse.gsub(/(...)(?=.)/, "\\1.").reverse
@@ -115,7 +34,7 @@ def next_date(dt)
 end
 
 STATS_CACHE = Hash.new do |h,dt|
-  h[dt] = Stats.new("csv-mem/#{ dt }.csv")
+  h[dt] = MemoryStats.new("csv-mem/#{ dt }.csv")
 end
 def purge_cache
   # TODO
@@ -126,31 +45,139 @@ def purge_cache
 # end
 end
 
+require "sinatra"
+
+$QSTAT_USER_IDS = UserIDs.new("qstat-user-to-ids.json")
+
+
+
 get "/" do
+  q = (request.query_string == "") ? "" : "?" + request.query_string
+  redirect "/memory#{ q }"
+end
+
+get "/queues" do
+  erb :queues
+end
+
+get "/reset.css" do
+  content_type :css
+  File.read("public/reset.css")
+end
+
+get "/cluster.css" do
+  content_type :css
+  File.read("public/cluster.css")
+end
+
+get "/queues.js" do
+  content_type :js
+  File.read("public/queues.js")
+end
+
+get "/memory.js" do
+  content_type :js
+  File.read("public/memory.js")
+end
+
+get "/queue-stats.json" do
+  content_type :json
+  d = QstatQueue.stats($QSTAT_USER_IDS)
+  JSON.dump({
+    :datetime=>d[:timestamp].localtime.strftime("%H:%M:%S"),
+    :stats=>d[:stats]
+  })
+end
+
+# iwanthue
+# H 0 - 360
+# C 0.3 - 1.7
+# L 0.3 - 0.8
+COLORS = %w{ #AA5567
+             #5D8A2A
+             #437EA5
+             #986D1B
+             #B860A8
+             #41845C
+             #B95937
+             #68643E
+             #825682
+             #83493E
+             #2D6461
+             #8F6A6F
+             #CA5080
+             #686921
+             #C64C5A
+             #3C566E
+             #355C37
+             #8E5E35
+             #64787E
+             #457A39
+             #74415B
+             #8A69A9
+             #A2527C
+             #6076AB
+             #5F5375
+             #488579
+             #417F94
+             #A36D93
+             #535254
+             #AD5A95 }
+
+get "/user-colors.css" do
+  content_type :css
+# @user_colors_cache ||= (
+#   [ 0, 16, 8, 24, 4, 12, 20, 28, 2, 6, 10, 14, 18, 22 ].flat_map do |offset|
+#     [ 5 * offset, 5 * (offset + 30) ]
+#   end.each_with_index.map do |h,i|
+#     ".all-owners .owner-#{ i }, .only-owner-#{ i } .owner-#{ i } {background-color:hsl(#{ h },60%,35%) !important;}\n"
+#   end.join
+# )
+#
+  @user_colors_cache ||= (
+    COLORS.each_with_index.map do |c,i|
+      ".all-owners .owner-#{ i }, .only-owner-#{ i } .owner-#{ i } {background-color:#{ c } !important;}\n"
+    end.join
+  )
+end
+
+get "/matlab" do
+  erb :matlab, :locals=>{ :toolboxes=>MatlabLicense.toolboxes, :only_content=>params[:only_content] }
+end
+
+get "/memory" do
   dates = Dir["csv-mem/*.csv"].map do |f| f[/[0-9]+[-0-9]+/] end
   date = dates.sort.last
   stats = STATS_CACHE[date].refresh
-  erb :list_tasks, :locals=>{ :running=>true, :date=>date, :stats=>stats.current_jobs, :current_job=>nil, :dates=>dates }
+  erb :memory_tasks, :locals=>{ :running=>true, :date=>date, :stats=>stats.current_jobs, :current_job=>nil, :dates=>dates }
 end
 
 get "/history" do
-  dates = Dir["csv-mem/*.csv"].map do |f| f[/[0-9]+[-0-9]+/] end
-  erb :index, :locals=>{ :dates=>dates }
+  redirect "/memory/history"
+end
+get %r{\A(/[-0-9]+/.*)\Z} do
+  q = (request.query_string == "") ? "" : "?" + request.query_string
+  redirect "/memory#{ params[:captures].first }#{ q }"
 end
 
-get "/:date/" do |date|
+get "/memory/history" do
+  dates = Dir["csv-mem/*.csv"].map do |f| f[/[0-9]+[-0-9]+/] end
+  erb :memory_history, :locals=>{ :dates=>dates }
+end
+
+get "/memory/:date/" do |date|
   dates = Dir["csv-mem/*.csv"].map do |f| f[/[0-9]+[-0-9]+/] end
   raise "Invalid date" unless dates.include?(date)
   stats = STATS_CACHE[date].refresh
   purge_cache
-  erb :list_tasks, :locals=>{ :running=>false, :date=>date, :stats=>stats, :current_job=>nil, :dates=>dates }
+  erb :memory_tasks, :locals=>{ :running=>false, :date=>date, :stats=>stats, :current_job=>nil, :dates=>dates }
 end
 
-get "/:date/:job_id" do |date, job_id|
+get "/memory/:date/:job_id" do |date, job_id|
   dates = Dir["csv-mem/*.csv"].map do |f| f[/[0-9]+[-0-9]+/] end
   raise "Invalid date" unless dates.include?(date)
   stats = STATS_CACHE[date].refresh
   purge_cache
-  erb :list_tasks, :locals=>{ :running=>false, :date=>date, :stats=>stats[job_id], :current_job=>job_id, :dates=>dates }
+  erb :memory_tasks, :locals=>{ :running=>false, :date=>date, :stats=>stats[job_id], :current_job=>job_id, :dates=>dates }
 end
 

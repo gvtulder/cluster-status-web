@@ -1,0 +1,332 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro);
+@import url(http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+  margin: 35px 0 30px 0;
+  background: #f3f3f3;
+}
+
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 4px 0 0 0;
+  height: 30px;
+  background: #fff;
+  z-index: 100;
+  overflow: hidden;
+}
+#header p {
+  display: block;
+  float: left;
+  padding: 0 10px 0 5px;
+}
+#header p.nav {
+  float: right;
+  padding: 0 5px 0 0;
+}
+#header p span {
+  display: inline-block;
+  padding: 3px 5px 4px 5px;
+}
+#header p.nav a {
+  text-decoration: none;
+  display: inline-block;
+  margin-right: 5px;
+  padding: 3px 7px 4px 7px;
+  border-radius: 3px;
+  cursor: pointer;
+  background: #333;
+  color: #fff;
+}
+#header p a:hover {
+  background: #aaa;
+}
+#owner-toggle {
+  display: block;
+  float: left;
+  padding: 0 10px 0 5px;
+  margin-top: -1px;
+}
+#owner-toggle li {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 3px 5px 4px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+#owner-toggle li:hover {
+  background: #ddd;
+}
+#owner-toggle li .toggle {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  background: #aaa;
+}
+
+table.queues {
+  width: 97%;
+  margin: 0 auto;
+  padding: 10px;
+}
+table.queues td {
+  padding: 2px;
+  text-align: center;
+  vertical-align: top;
+  position: relative;
+}
+table.queues .finished-jobs td {
+  vertical-align: top;
+  padding: 6px;
+}
+table.queues .running-jobs td {
+  vertical-align: bottom;
+}
+table.queues .queued-jobs td {
+  vertical-align: bottom;
+  padding: 6px;
+}
+table.queues .running-jobs .queue {
+  min-width: 100px;
+  height: 270px;
+  padding: 4px;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  background: #ddd;
+  white-space: nowrap;
+}
+table.queues .arrow {
+  color: #bbb;
+  padding: 4px;
+  font-size: 20px;
+}
+table.queues h2 {
+  padding: 3px 0 5px 0;
+  text-align: center;
+}
+ul.jobgroups {
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 1px;
+  white-space: nowrap;
+}
+ul.jobgroups > li {
+  position: relative;
+  text-align: left;
+  overflow: hidden;
+  padding: 3px 4px 4px 4px;
+  border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  background: #aaa;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+}
+ul.jobgroups ul {
+  position: relative;
+  margin: 3px 0 2px 0;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  overflow: hidden;
+}
+
+table.queues ul.jobgroups > li {
+  min-width: 160px;
+  max-width: 160px;
+  width: 160px;
+  margin: 1px 0;
+}
+table.queues ul.jobgroups > li > span.multi {
+  position: absolute;
+  right: 5px;
+}
+
+
+
+#header p#date-nav-links .current {
+  display: inline-block;
+  padding: 3px 7px 4px 7px;
+  border-radius: 3px;
+  background: #f3f3f3;
+  background-image: linear-gradient(to bottom, #e8e8e8, #f3f3f3);
+  color: #000;
+  height: 23px;
+}
+#header p#date-nav-links a {
+  text-decoration: none;
+  display: inline-block;
+  padding: 3px 7px 4px 7px;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #000;
+  height: 30px;
+}
+#header p#date-nav-links a:hover {
+  background: #ddd;
+}
+
+.memory-stats {
+  padding: 5px 12px;
+}
+.memory-stats h1 {
+  margin: 0.1em 0 0.6em 0;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+.memory-stats h2 {
+  margin: 0.6em 0;
+  font-size: 1.7em;
+}
+.memory-stats p {
+  font-family: sans-serif;
+  margin: 0.2em 0 0.5em 0;
+  font-size: 11px;
+}
+
+.memory-stats a {
+  text-decoration: none;
+  color: #00f;
+}
+.memory-stats a:hover {
+  text-decoration: underline;
+}
+
+.memory-stats table {
+  font-family: sans-serif;
+  font-size: 11px;
+}
+.memory-stats th, .memory-stats td {
+  padding: 2px 5px 2px 1px;
+  text-align: left;
+  white-space: nowrap;
+}
+.memory-stats th {
+  font-weight: bold;
+}
+.memory-stats table.legend {
+  margin-bottom: 1.2em;
+}
+.memory-stats table.legend td {
+  padding-right: 10px;
+}
+table.stats {
+  table-layout: fixed;
+}
+table.stats th,
+table.stats td {
+  overflow-x: hidden;
+}
+table.stats th:nth-child(1), table.stats td:nth-child(1) { width: 120px; min-width: 120px; max-width: 120px; }
+table.stats th:nth-child(2), table.stats td:nth-child(2) { width: 85px;  min-width: 85px;  max-width: 85px; }
+table.stats th:nth-child(3), table.stats td:nth-child(3) { width: 105px; min-width: 105px; max-width: 105px; }
+table.stats th:nth-child(4), table.stats td:nth-child(4) { width: 150px; min-width: 150px; max-width: 150px; }
+table.stats th:nth-child(5), table.stats td:nth-child(5) { width: 55px;  min-width: 55px;  max-width: 55px; }
+table.stats th:nth-child(6), table.stats td:nth-child(6) { width: 100px; min-width: 100px; max-width: 100px; }
+table.stats th:nth-child(7), table.stats td:nth-child(7) { width: 100px; min-width: 100px; max-width: 100px; }
+table.stats th:nth-child(8), table.stats td:nth-child(8) { width: 100px; min-width: 100px; max-width: 100px; }
+/* table.stats th:nth-child(8), table.stats td:nth-child(8) { width: 400px; min-width: 400px; max-width: 400px; } */
+table.stats tr:hover td {
+  background: #ddd;
+}
+table.stats .r {
+  text-align: right;
+}
+span.mbar-cur {
+  background: #777;
+  display: inline-block;
+  height: 6px;
+}
+span.mbar-max {
+  background: #bbb;
+  display: inline-block;
+  height: 6px;
+}
+span.mbar-req {
+  background: #b00;
+  display: inline-block;
+  height: 6px;
+}
+p.mem-chart {
+  font-size: 1px;
+  line-height: 1px;
+}
+p.mem-chart span.entry {
+  vertical-align: bottom;
+  display: inline-block;
+}
+p.mem-chart span.entry span {
+  vertical-align: bottom;
+}
+input.filter {
+  font-size: 11px;
+  width: 90%;
+  border: 1px solid #aaa;
+  padding: 0;
+}
+table.total-cluster-mbar {
+  margin-bottom: 1.2em;
+}
+table.total-cluster-mbar th,
+table.total-cluster-mbar td {
+  padding-right: 0;
+}
+table.total-cluster-mbar td + td {
+  padding-left: 0;
+}
+
+.matlab-licenses {
+  padding: 5px 12px;
+}
+.matlab-licenses h1 {
+  margin: 0.1em 0 0.6em 0;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+.matlab-licenses h2 {
+  padding: 3px;
+  font-size: 16px;
+  color: #888;
+}
+.matlab-licenses h2 strong {
+  color: #000;
+}
+.matlab-licenses .toolboxes {
+  max-width: 900px;
+}
+.matlab-licenses .toolboxes > li {
+  display: block;
+  float: left;
+  width: 200px;
+  margin: 0 5px 14px 0;
+  padding: 4px;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  background: #ddd;
+}
+.matlab-licenses .toolboxes .users {
+  margin: 3px 0 0 0;
+}
+.matlab-licenses .toolboxes .users > li {
+  margin: 2px 0 0 0;
+  padding: 3px 4px 4px 4px;
+  border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  font-size: 14px;
+}
+.matlab-licenses .toolboxes .users > li.in-use {
+  color: rgba(255,255,255,0.8);
+  /* background: rgba(0,0,150,0.8); */
+  background: #437EA5;
+}
+.matlab-licenses .toolboxes .users > li.available {
+  color: #888;
+}
+
