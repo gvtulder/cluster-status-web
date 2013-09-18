@@ -14,7 +14,6 @@ class QstatQueue
   def self.stats(user_id_list)
     if not @cache_time or (Time.now - @cache_time) > 60 and not @refreshing_cache
       @refreshing_cache = true
-      puts "Calling qstat"
       @cache = self.stats_without_cache(user_id_list)
       @cache_time = Time.now
       @refreshing_cache = false
@@ -29,58 +28,60 @@ class QstatQueue
       end
     end
 
-    IO.popen(["qstat","-s","az","-u","*","-xml","-g","d","-r","-pri"]) do |io|
-      doc = Nokogiri::XML(io)
-      puts "Processing"
-      doc.xpath("/job_info/*").each do |job_info|  # /job_info/job_info and /job_info/queue_info
-        job_info.children.each do |job_list|
-          fields = {}
-          job_list.children.each do |child|
-            fields[child.name] = child.text
-          end
+    $stderr.puts "Calling qstat"
+    doc = IO.popen(["qstat","-s","az","-u","*","-xml","-g","d","-r","-pri"]) do |io|
+      Nokogiri::XML(io)
+    end
 
-          job_number = fields["JB_job_number"]
-          tasks = fields["tasks"]
-          owner = fields["JB_owner"]
-          state = fields["state"]
-          state = "z" if job_list["state"] == "zombie"
-          job_name = fields["JB_name"]
-          running_queue = fields["queue"]
-          hard_req_queue = fields["hard_req_queue"]
-          start_time = fields["JAT_start_time"]
-          submission_time = fields["JB_submission_time"]
-          prio = fields["JAT_prio"]
+    $stderr.puts "Parsing qstat"
+    doc.xpath("/job_info/*").each do |job_info|  # /job_info/job_info and /job_info/queue_info
+      job_info.children.each do |job_list|
+        fields = {}
+        job_list.children.each do |child|
+          fields[child.name] = child.text
+        end
+
+        job_number = fields["JB_job_number"]
+        tasks = fields["tasks"]
+        owner = fields["JB_owner"]
+        state = fields["state"]
+        state = "z" if job_list["state"] == "zombie"
+        job_name = fields["JB_name"]
+        running_queue = fields["queue"]
+        hard_req_queue = fields["hard_req_queue"]
+        start_time = fields["JAT_start_time"]
+        submission_time = fields["JB_submission_time"]
+        prio = fields["JAT_prio"]
  
-#         job_number = job_list.text_at_xpath("JB_job_number")
-#         tasks = job_list.text_at_xpath("tasks")
-#         owner = job_list.text_at_xpath("JB_owner")
-#         state = job_list.text_at_xpath("state")
-#         state = "z" if job_list["state"] == "zombie"
-#         job_name = job_list.text_at_xpath("JB_name")
-#         running_queue = job_list.text_at_xpath("queue")
-#         hard_req_queue = job_list.text_at_xpath("hard_req_queue")
-#         start_time = job_list.text_at_xpath("JAT_start_time")
-#         submission_time = job_list.text_at_xpath("JB_submission_time")
-#         prio = job_list.text_at_xpath("JAT_prio")
+#       job_number = job_list.text_at_xpath("JB_job_number")
+#       tasks = job_list.text_at_xpath("tasks")
+#       owner = job_list.text_at_xpath("JB_owner")
+#       state = job_list.text_at_xpath("state")
+#       state = "z" if job_list["state"] == "zombie"
+#       job_name = job_list.text_at_xpath("JB_name")
+#       running_queue = job_list.text_at_xpath("queue")
+#       hard_req_queue = job_list.text_at_xpath("hard_req_queue")
+#       start_time = job_list.text_at_xpath("JAT_start_time")
+#       submission_time = job_list.text_at_xpath("JB_submission_time")
+#       prio = job_list.text_at_xpath("JAT_prio")
 
-          queue = (running_queue || hard_req_queue)
-          job_id = "#{ job_number }.#{ tasks || "1" }"
+        queue = (running_queue || hard_req_queue)
+        job_id = "#{ job_number }.#{ tasks || "1" }"
 
-          unless job_name == "QRLOGIN"
-            stats[queue][state] << {
-              :job_id=>job_id,
-              :owner=>owner,
-              :owner_id=>(user_id_list ? user_id_list.user_to_id(owner) : nil),
-              :prio=>prio,
-              :job_number=>job_number,
-              :job_name=>job_name
-            }
-          end
+        unless job_name == "QRLOGIN"
+          stats[queue][state] << {
+            :job_id=>job_id,
+            :owner=>owner,
+            :owner_id=>(user_id_list ? user_id_list.user_to_id(owner) : nil),
+            :prio=>prio,
+            :job_number=>job_number,
+            :job_name=>job_name
+          }
         end
       end
     end
+    $stderr.puts "Parsed qstat"
 
-    puts "O"
     stats.each_value do |queue_h|
       queue_h.each do |status, status_h|
         if status == "z"

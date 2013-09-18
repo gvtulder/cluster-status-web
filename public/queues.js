@@ -215,6 +215,7 @@
       onSuccess: function(stats) {
         showStats(stats.stats);
         $('timestamp').innerHTML = stats.datetime;
+        equalElements($$('table.queues .running-jobs .queue'));
       }
     }).get();
   }
@@ -229,6 +230,18 @@
       document.body.className += 'only-owner only-owner-'+owner_id;
     }
   }
+
+  function equalElements(els){
+    // make elements equal height to max height of the set.
+    var height = Math.max.apply(Math, els.map(function(el){
+      return el.getSize().y;
+    }));
+
+    if (window.console && window.console.log) {
+      console.log('Equalising queue heights to ' + height + 'px');
+    }
+    els.setStyle('height', height);
+  };
 
   $('owner-toggle').addEvent('click', function(e) {
     var tgt = e.target;

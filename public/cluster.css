@@ -93,7 +93,7 @@ table.queues .queued-jobs td {
 }
 table.queues .running-jobs .queue {
   min-width: 100px;
-  height: 270px;
+  min-height: 150px;
   padding: 4px;
   border-radius: 4px;
   -webkit-border-radius: 4px;
