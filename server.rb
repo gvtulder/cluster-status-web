@@ -4,7 +4,6 @@ require "time"
 require "json"
 require "sinatra"
 
-require "./qstat_memstats"
 require "./matlab"
 require "./qstat"
 require "./user_ids"
