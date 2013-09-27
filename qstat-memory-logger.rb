@@ -32,6 +32,9 @@ loop do
     collect_job_stats(history)
   end
 
+  # gzip-compress old databases
+  History.archive!
+
   sleep 120
 end
 

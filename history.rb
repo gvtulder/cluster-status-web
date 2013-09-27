@@ -1,5 +1,6 @@
 require "rubygems"
 require "time"
+require "date"
 require "sqlite3"
 
 class History
@@ -32,6 +33,15 @@ class History
       r = yield History.new(db)
     end
     r
+  end
+
+  def self.archive!(max_age=7)
+    Dir["#{ DB_DIR }/*.sqlite3"].each do |f|
+      if Date.parse(f[/[0-9]+-[-0-9]+/]) < Date.today - 7
+        $stderr.puts "Archiving #{ f }"
+        system(["gzip", f])
+      end
+    end
   end
 
 
