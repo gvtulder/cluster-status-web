@@ -69,7 +69,7 @@
     <% if running %>
       <table cellspacing="0" class="total-cluster-mbar">
         <tr>
-          <th colspan="3">
+          <th colspan="4">
             Current memory allocation (sum of all running jobs)
           </th>
         </tr>
@@ -91,29 +91,17 @@
           vmem_max_pix = (600 * (total_max.to_f / max_mem)).to_i
           # vmem requested
           vmem_req_pix = (600 * (total_req.to_f / max_mem)).to_i
-          %><td><span class="mbar-cur" style="width: <%= vmem_cur_pix %>px"></span></td><%
+          %><td><span class="mbar-cur" style="width: <%= vmem_cur_pix %>px"></span><div class="num"><%= format_mem(total_cur) %> MB<br/>in use by running jobs</div></td><%
+          %><td><%
           if vmem_max_pix > vmem_cur_pix
-            %><td><span class="mbar-max" style="width: <%= vmem_max_pix - vmem_cur_pix %>px"></span></td><%
+            %><span class="mbar-max" style="width: <%= vmem_max_pix - vmem_cur_pix %>px"></span><div class="num"><%= format_mem(total_max - total_cur) %> MB</div><%
           end
+          %></td><td colspan="2"><%
           if vmem_req_pix > vmem_max_pix
-            %><td><span class="mbar-req" style="width: <%= vmem_req_pix - vmem_max_pix %>px"></span></td><%
+            %><span class="mbar-req" style="width: <%= vmem_req_pix - vmem_max_pix %>px"></span><div class="num"><%= format_mem(total_req - total_max) %> MB<br/>requested, but never actually used</div><%
           end
-
-          %></tr><tr><%
-
-          %><td><%= format_mem(total_cur) %> MB</td><%
-          if vmem_max_pix > vmem_cur_pix
-            %><td><%= format_mem(total_max - total_cur) %> MB</td><%
-          end
-          if vmem_req_pix > vmem_max_pix
-            %><td><%= format_mem(total_req - total_max) %> MB</td><%
-          end
+          %></td><%
         %>
-        </tr>
-        <tr>
-          <td>in use by running jobs</td>
-          <td>&nbsp;</td>
-          <td>requested, but never actually used</td>
         </tr>
       </table>
 

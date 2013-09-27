@@ -270,14 +270,25 @@ input.filter {
   padding: 0;
 }
 table.total-cluster-mbar {
-  margin-bottom: 1.2em;
+  margin-bottom: 3.2em;
 }
 table.total-cluster-mbar th,
 table.total-cluster-mbar td {
   padding-right: 0;
+  position: relative;
 }
 table.total-cluster-mbar td + td {
   padding-left: 0;
+}
+table.total-cluster-mbar div.num {
+  position: absolute;
+  left: 1px;
+  top: 15px;
+}
+table.total-cluster-mbar td:last-child div.num {
+  text-align: right;
+  left: auto;
+  right: 1px;
 }
 
 .matlab-licenses {
