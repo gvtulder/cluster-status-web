@@ -11,11 +11,15 @@
     }
   }
 
-  function summariseJobList(q, groupByOwner) {
+  function summariseJobList(q, groupByOwner, reverseGroup) {
     var blocks = [], blocksPerOwner = {},
         curBlock, job;
     for (var i=0; i<q.length; i++) {
-      job = q[i];
+      if (reverseGroup) {
+        job = q[q.length - i - 1];
+      } else {
+        job = q[i];
+      }
       if (groupByOwner) {
         if (!blocksPerOwner[job.owner]) {
           curBlock = {
@@ -24,20 +28,36 @@
             jobs:  [ job ]
           };
           blocksPerOwner[job.owner] = curBlock;
-          blocks.push(curBlock);
+          if (reverseGroup) {
+            blocks.unshift(curBlock);
+          } else {
+            blocks.push(curBlock);
+          }
         } else {
-          blocksPerOwner[job.owner].jobs.push(job);
+          if (reverseGroup) {
+            blocksPerOwner[job.owner].jobs.unshift(job);
+          } else {
+            blocksPerOwner[job.owner].jobs.push(job);
+          }
         }
       } else {
         if (curBlock && curBlock.owner == job.owner) {
-          curBlock.jobs.push(job);
+          if (reverseGroup) {
+            curBlock.jobs.unshift(job);
+          } else {
+            curBlock.jobs.push(job);
+          }
         } else {
           curBlock = {
             owner: job.owner,
             owner_id: job.owner_id,
             jobs: [ job ]
           };
-          blocks.push(curBlock);
+          if (reverseGroup) {
+            blocks.unshift(curBlock);
+          } else {
+            blocks.push(curBlock);
+          }
         }
       }
     }
@@ -125,7 +145,7 @@
         var jobGroups = [];
         if (stats[queue] && stats[queue][state]) {
           jobGroups = summariseJobList(stats[queue][state],
-                                       state == 'r');
+                                       true, state == 'qw');
           collectUsers(stats[queue][state], allUsers, allUserIDs);
         }
             
