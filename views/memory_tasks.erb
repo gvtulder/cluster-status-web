@@ -43,9 +43,9 @@
     <% if current_job %>
       <p class="mem-chart">
         <%=
-          mems = stats.map do |job_id, job|
-            # cur           max           req
-            [ job[10].to_f, job[11].to_f, job[5].to_f ]
+          mems = stats.map do |job|
+            # cur               max                  req
+            [ job["vmem"].to_f, job["maxvmem"].to_f, job["vmem_request"].to_f ]
           end
 
           max_mem = mems.map{|a|a.max}.max || 1
@@ -78,10 +78,10 @@
           total_cur = 0
           total_max = 0
           total_req = 0
-          mems = stats.map do |job_id, job|
-            total_cur += job[10].to_f
-            total_max += job[11].to_f
-            total_req += job[5].to_f
+          mems = stats.map do |job|
+            total_cur += job["vmem"].to_f
+            total_max += job["maxvmem"].to_f
+            total_req += job["vmem_request"].to_f
           end
 
           max_mem = 1024*1024*1024*1260
@@ -173,37 +173,38 @@
           queue_filter = params[:queue].to_s.downcase.strip
           queue_filter = nil if queue_filter == ""
 
-          stats.each do |job_id, job|
+          stats.each do |job|
+            job_id = job["job_id"]
             matches_filter = (
               (job_id_filter.nil? || job_id.to_s.downcase.include?(job_id_filter))   &&
-              (owner_filter.nil? || job[3].to_s.downcase.include?(owner_filter))     &&
-              (jobname_filter.nil? || job[4].to_s.downcase.include?(jobname_filter)) &&
-              (queue_filter.nil? || job[12].to_s.downcase.include?(queue_filter))
+              (owner_filter.nil? || job["owner"].to_s.downcase.include?(owner_filter))     &&
+              (jobname_filter.nil? || job["job_name"].to_s.downcase.include?(jobname_filter)) &&
+              (queue_filter.nil? || job["job_project"].to_s.downcase.include?(queue_filter))
             )
         %>
           <tr<% unless matches_filter %> style="display:none"<% end %>>
-            <td><%= Time.at(job[0].to_i).localtime.strftime("%Y-%m-%d %H:%M:%S") %></td>
+            <td><%= Time.at(job["timestamp"].to_i).localtime.strftime("%Y-%m-%d %H:%M:%S") %></td>
             <% if current_job %>
               <td><%=h job_id %></td>
             <% else %>
               <td><a href="/memory/<%= date %>/<%=h job_id %>"><%=h job_id %></a></td>
             <% end %>
-            <td><%=h job[3] %></td>
-            <td><%=h job[4] %></td>
-            <td><%=h job[12].to_s.sub(/^p[0-9]+_/, "") %></td>
+            <td><%=h job["owner"] %></td>
+            <td><%=h job["job_name"] %></td>
+            <td><%=h job["job_project"].to_s.sub(/^p[0-9]+_/, "") %></td>
             <%=
               # memory
-              [ 5, 10, 11 ].map do |i|
+              %w{ vmem_request vmem maxvmem }.map do |i|
                 "<td class=\"r\">#{ format_mem(job[i]) } MB</td>"
               end.join
             %>
             <td class="mbar"><nobr><%
               # vmem current
-              vmem_cur_pix = (200 * (job[10].to_f / (1024*1024*1024*12))).to_i
+              vmem_cur_pix = (200 * (job["vmem"].to_f / (1024*1024*1024*12))).to_i
               # vmem max
-              vmem_max_pix = (200 * (job[11].to_f / (1024*1024*1024*12))).to_i
+              vmem_max_pix = (200 * (job["maxvmem"].to_f / (1024*1024*1024*12))).to_i
               # vmem requested
-              vmem_req_pix = (200 * (job[5].to_f  / (1024*1024*1024*12))).to_i
+              vmem_req_pix = (200 * (job["vmem_request"].to_f  / (1024*1024*1024*12))).to_i
               %><span class="mbar-cur" style="width: <%= vmem_cur_pix %>px"></span><%
               if vmem_max_pix > vmem_cur_pix
                 %><span class="mbar-max" style="width: <%= vmem_max_pix - vmem_cur_pix %>px"></span><%
