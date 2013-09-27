@@ -23,8 +23,16 @@ class UserIDs
   end
 
   def user_to_id(name)
+    name = name.to_s.downcase.delete("^a-z")
     @cache[name] or (
-      id = @cache.size
+      # find an unused id
+      ids_used = @cache.values
+      id = 0
+      while ids_used.include?(id)
+        id += 1
+      end
+
+      # assign id
       @cache[name] = id
       write_cache
       id
