@@ -39,7 +39,7 @@ class History
     Dir["#{ DB_DIR }/*.sqlite3"].each do |f|
       if Date.parse(f[/[0-9]+-[-0-9]+/]) < Date.today - 7
         $stderr.puts "Archiving #{ f }"
-        system(["gzip", f])
+        system("gzip", f)
       end
     end
   end
