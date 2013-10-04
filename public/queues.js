@@ -283,7 +283,7 @@
   });
 
   updateStats();
-  window.setInterval(updateStats, 30000);
+  window.setInterval(updateStats, 15000);
 
 }());
 
