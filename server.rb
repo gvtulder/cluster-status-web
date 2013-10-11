@@ -29,7 +29,7 @@ class Cache
   end
 
   def initialize(max_age)
-    @max_age = 60
+    @max_age = max_age
   end
 
   def cached
@@ -67,7 +67,7 @@ end
 
 get "/queue-stats.json" do
   content_type :json
-  Cache.cached(:queue_stats, 30) do
+  Cache.cached(:queue_stats, 20) do
     d = Qstat.jobs_per_queue($QSTAT_USER_IDS)
     JSON.dump({
       :datetime=>Time.now.localtime.strftime("%H:%M:%S"),
