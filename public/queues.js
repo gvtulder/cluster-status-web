@@ -64,6 +64,71 @@
     return blocks;
   }
 
+  function sortJobGroups(jobGroups, maxLinesPerGroup, maxLinesPerCol) {
+    // sort job names
+    for (var i=0; i<jobGroups.length; i++) {
+      jobGroups[i].jobs.sort(function(a,b) {
+        if (a.job_name < b.job_name) return -1;
+        else if (a.job_name > b.job_name) return 1;
+        else return 0;
+      });
+    }
+
+    // LPT sort
+    // - sort by height, reverse
+    jobGroups.sort(function(a,b) {
+      if (a.jobs.length < b.jobs.length) return 1;
+      else if (a.jobs.length > b.jobs.length) return -1;
+      else return 0;
+    });
+
+    var numberOfBins = 1, newBinAdded = true;
+    while (newBinAdded) {
+      newBinAdded = false;
+      var binHeights = [];
+      for (var i=0; i<numberOfBins; i++) {
+        binHeights.push(0);
+      }
+      for (var i=0; i<jobGroups.length; i++) {
+        var b = 0, jobGroup = jobGroups[i],
+            minBin = -1, minBinHeight = 100000,
+            jobGroupHeight = Math.min(maxLinesPerGroup, jobGroup.jobs.length + 2);
+        // find a column where this would fit
+        // (there is always room in a new column)
+        minBin = binHeights.length;
+        for (var b=0; b<binHeights.length; b++) {
+          if (binHeights[b] + jobGroupHeight <= maxLinesPerCol) {
+            // this group would fit here,
+            // but is it the emptiest so far?
+            if (binHeights[b] < minBinHeight) {
+              // yes, it might be the emptiest column
+              minBin = b;
+              minBinHeight = binHeights[b];
+            }
+          }
+        }
+        // add a new column?
+        if (minBin >= binHeights.length) {
+          numberOfBins++;
+          newBinAdded = true;
+          break;
+        }
+        // add jobGroup to column
+        jobGroup.column = minBin;
+        binHeights[minBin] += jobGroupHeight;
+      }
+    }
+
+    // order by column
+    jobGroups.sort(function(a,b) {
+      if (a.column < b.column) return -1;
+      else if (a.column > b.column) return 1;
+      else return 0;
+    });
+
+    return jobGroups;
+  }
+
   String.prototype.hashCode = function(){
     var hash = 0, i, char;
     if (this.length == 0) return hash;
@@ -135,6 +200,9 @@
 
     for (var s=0; s<STATES.length; s++) {
       var state = STATES[s];
+      var MAX_LINES_PER_GROUP = (state == 'r' ? 14 : 8);
+      var MAX_LINES_PER_COL = 20;
+
       var container = document.createDocumentFragment();
       for (var q=0; q<QUEUES.length; q++) {
         var queue = QUEUES[q];
@@ -147,6 +215,9 @@
           jobGroups = summariseJobList(stats[queue][state],
                                        true, state == 'qw');
           collectUsers(stats[queue][state], allUsers, allUserIDs);
+          if (state == 'r') {
+            sortJobGroups(jobGroups, MAX_LINES_PER_GROUP, MAX_LINES_PER_COL);
+          }
         }
             
         div.className = 'queue';
@@ -167,18 +238,18 @@
         ul = document.createElement('ul');
         ul.className = 'jobgroups';
 
-        var MAX_LINES_PER_GROUP = (state == 'r' ? 14 : 8);
-        var MAX_LINES_PER_COL = 20;
-        var curColLines = MAX_LINES_PER_COL;
+        var curColLines = MAX_LINES_PER_COL,
+            curCol = 0;
 
         for (var i=0; i<jobGroups.length; i++) {
           var groupHeight = 2 + Math.min(jobGroups[i].jobs.length, MAX_LINES_PER_GROUP - 2);
           curColLines -= groupHeight;
-          if (curColLines < 0 && state == 'r') {
+          if ((curColLines < 0 && state == 'r') || (jobGroups[i].column && curCol < jobGroups[i].column)) {
             div.appendChild(ul);
             ul = document.createElement('ul');
             ul.className = 'jobgroups';
             curColLines = MAX_LINES_PER_COL - groupHeight;
+            curCol = jobGroups[i].column;
           }
           ul.appendChild(userJobGroup(jobGroups[i], MAX_LINES_PER_GROUP - 2));
         }
