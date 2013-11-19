@@ -36,7 +36,7 @@ class Qstat
         job_data = {}
         element.children.each do |child|
           case child.name
-          when "JB_job_number", "JB_owner", "JB_job_name", "JB_project"
+          when "JB_job_number", "JB_owner", "JB_job_name", "JB_project", "JB_submission_time", "JB_start_time"
             job_data[child.name] = child.text.delete(" \t\r\n")
           when "JB_hard_resource_list"
             job_data["vmem_request"] = child.text_at_xpath("qstat_l_requests[CE_name='h_vmem']/CE_doubleval")
@@ -75,48 +75,52 @@ class Qstat
   end
 
   # hash[queue][state] = [... jobs ...]
-  def self.jobs_per_queue(user_id_list=nil)
+  def self.jobs_per_queue(user_id_list=nil, status="az")
     stats = Hash.new do |stats_hash, queue|
       stats_hash[queue] = Hash.new do |queue_hash, status|
         queue_hash[status] = []
       end
     end
 
-    doc = IO.popen(["qstat","-s","az","-u","*","-xml","-g","d","-r","-pri"]) do |io|
+    doc = IO.popen(["qstat","-s",status,"-u","*","-xml","-g","d","-r","-pri"]) do |io|
       Nokogiri::XML(io)
     end
 
     doc.xpath("/job_info/*").each do |job_info|  # /job_info/job_info and /job_info/queue_info
       job_info.children.each do |job_list|
-        fields = {}
-        job_list.children.each do |child|
-          fields[child.name] = child.text
-        end
+        if job_list.name == "job_list"
+          fields = {}
+          job_list.children.each do |child|
+            fields[child.name] = child.text
+          end
 
-        job_number = fields["JB_job_number"]
-        tasks = fields["tasks"]
-        owner = fields["JB_owner"]
-        state = fields["state"]
-        state = "z" if job_list["state"] == "zombie"
-        job_name = fields["JB_name"]
-        running_queue = fields["queue"]
-        hard_req_queue = fields["hard_req_queue"]
-        start_time = fields["JAT_start_time"]
-        submission_time = fields["JB_submission_time"]
-        prio = fields["JAT_prio"]
- 
-        queue = (running_queue || hard_req_queue)
-        job_id = "#{ job_number }.#{ tasks || "1" }"
+          job_number = fields["JB_job_number"]
+          tasks = fields["tasks"]
+          owner = fields["JB_owner"]
+          state = fields["state"]
+          state = "z" if job_list["state"] == "zombie"
+          job_name = fields["JB_name"]
+          running_queue = fields["queue"]
+          hard_req_queue = fields["hard_req_queue"]
+          start_time = fields["JAT_start_time"]
+          submission_time = fields["JB_submission_time"]
+          prio = fields["JAT_prio"]
+   
+          queue = (running_queue || hard_req_queue)
+          job_id = "#{ job_number }.#{ tasks || "1" }"
 
-        unless job_name == "QRLOGIN"
-          stats[queue][state] << {
-            :job_id=>job_id,
-            :owner=>owner,
-            :owner_id=>(user_id_list ? user_id_list.user_to_id(owner) : nil),
-            :prio=>prio,
-            :job_number=>job_number,
-            :job_name=>job_name
-          }
+          unless job_name == "QRLOGIN"
+            stats[queue][state] << {
+              :job_id=>job_id,
+              :owner=>owner,
+              :owner_id=>(user_id_list ? user_id_list.user_to_id(owner) : nil),
+              :prio=>prio,
+              :job_number=>job_number,
+              :job_name=>job_name,
+              :submission_time=>submission_time,
+              :start_time=>start_time
+            }
+          end
         end
       end
     end

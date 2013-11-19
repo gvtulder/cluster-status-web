@@ -80,6 +80,29 @@ get "/matlab" do
   erb :matlab, :locals=>{ :toolboxes=>MatlabLicense.toolboxes, :only_content=>params[:only_content] }
 end
 
+get "/chart" do
+  redirect "/chart/2"
+end
+
+get "/chart/:days" do |days|
+  erb :chart, :locals=>{ :days=>days }
+end
+
+get "/chart-data.json" do
+  content_type :json
+  File.read("db/chart-data-2.json")
+end
+
+get "/chart-data-2.json" do
+  content_type :json
+  File.read("db/chart-data-2.json")
+end
+
+get "/chart-data-21.json" do
+  content_type :json
+  File.read("db/chart-data-21.json")
+end
+
 
 ## memory
 

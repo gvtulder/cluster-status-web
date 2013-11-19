@@ -4,8 +4,9 @@ require "json"
 class UserIDs
   DB_DIR = File.join(File.dirname(__FILE__), "db")
 
-  def initialize(filename="qstat-user-to-ids.json")
+  def initialize(filename="qstat-user-to-ids.json", save_on_changes=true)
     @filename = File.join(DB_DIR, filename)
+    @save_on_changes = save_on_changes
     load_cache
   end
 
@@ -17,8 +18,10 @@ class UserIDs
   end
 
   def write_cache
-    File.open(@filename, "w") do |f|
-      f << JSON.dump(@cache)
+    if @save_on_changes
+      File.open(@filename, "w") do |f|
+        f << JSON.dump(@cache)
+      end
     end
   end
 

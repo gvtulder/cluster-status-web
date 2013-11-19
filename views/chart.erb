@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Cluster usage</title>
+    <link rel="stylesheet" type="text/css" href="/reset.css" />
+    <link rel="stylesheet" type="text/css" href="/cluster.css" />
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+  </head>
+
+  <body>
+
+    <div id="header">
+      <p>
+        <span>Cluster history &ndash; Hall of Fame</span>
+        <% if days == "2" %>
+          <span class="current">48 hours</span>
+        <% else %>
+          <a href="/chart/2" class="date-nav-link">48 hours</a>
+        <% end %>
+        <% if days == "21" %>
+          <span class="current">3 weeks</span>
+        <% else %>
+          <a href="/chart/21" class="date-nav-link">3 weeks</a>
+        <% end %>
+      </p>
+      <p class="nav"><a href="/queues">Queues</a><a href="/memory">Memory</a><a href="/matlab">Matlab</a></p>
+    </div>
+
+    <div>
+      <div id="chart-running" style="width:100%; height:400px;"><p style="padding: 10px;">Loading chart...</p></div>
+      <div id="chart-queued" style="width:100%; height:400px;"></div>
+    </div>
+
+    <script type="text/javascript">
+    $(function () { 
+      var COLORS = [
+            '#AA5567','#5D8A2A','#437EA5',
+            '#986D1B','#B860A8','#41845C',
+            '#B95937','#68643E','#825682',
+            '#83493E','#2D6461','#8F6A6F',
+            '#CA5080','#686921','#C64C5A',
+            '#3C566E','#355C37','#8E5E35',
+            '#64787E','#457A39','#74415B',
+            '#8A69A9','#A2527C','#6076AB',
+            '#5F5375','#488579','#417F94',
+            '#A36D93','#535254','#AD5A95'];
+
+      $.getJSON('/chart-data-<%= days %>.json?r='+Math.random(), function(data) {
+        var series = [];
+        if (window.console && window.console.log) {
+          console.log('Preparing data.');
+        }
+        for (var i=0; i<data.series.running.length; i++) {
+          var thisData = data.series.running[i].points,
+              thisSeriesPoints = [];
+          for (var j=0; j<thisData.length; j++) {
+            thisSeriesPoints.push([ data.timestamps[j]*1000, thisData[j] ]);
+          }
+          series.push({
+            name: data.series.running[i].name,
+            index: i, // data.series.running[i].user_id,
+            legendIndex: i,
+            color: COLORS[data.series.running[i].user_id],
+            data: thisSeriesPoints
+          });
+        }
+        if (window.console && window.console.log) {
+          console.log('Data prepared.');
+        }
+
+        Highcharts.setOptions({
+          global: {
+            useUTC: false
+          }
+        });
+
+        $('#chart-running').highcharts({
+          chart: {
+            type: 'area',
+            animation: false,
+            zoomType: 'x',
+            backgroundColor: '#f3f3f3'
+          },
+          title: {
+            text: 'Jobs per user, running (drag to zoom)',
+            style: { fontFamily: '\'Source Sans Pro\', sans-serif',
+                     fontSize: '16px', color: '#000000' }
+          },
+          credits: {
+            enabled: false
+          },
+          xAxis: {
+            type: 'datetime'
+          },
+          yAxis: {
+            maxPadding: 0,
+            endOnTick: false,
+            tickInterval: 32,
+            title: { text: null }
+          },
+          plotOptions: {
+            area: {
+              stacking: 'normal',
+              animation: false,
+              marker: { enabled: false },
+              lineWidth: 0,
+              symbol: 'circle',
+              fillOpacity: 1,
+              enableMouseTracking: true
+            }
+          },
+          tooltip: {
+            shared: true
+          },
+          series: series
+        });
+
+
+        var series = [];
+        if (window.console && window.console.log) {
+          console.log('Preparing data.');
+        }
+        for (var i=0; i<data.series.queued.length; i++) {
+          var thisData = data.series.queued[i].points,
+              thisSeriesPoints = [];
+          for (var j=0; j<thisData.length; j++) {
+            thisSeriesPoints.push([ data.timestamps[j]*1000, thisData[j] ]);
+          }
+          series.push({
+            name: data.series.queued[i].name,
+            index: i, // data.series.running[i].user_id,
+            legendIndex: i,
+            color: COLORS[data.series.queued[i].user_id],
+            data: thisSeriesPoints
+          });
+        }
+        if (window.console && window.console.log) {
+          console.log('Data prepared.');
+        }
+
+        Highcharts.setOptions({
+          global: {
+            useUTC: false
+          }
+        });
+
+        $('#chart-queued').highcharts({
+          chart: {
+            type: 'area',
+            animation: false,
+            zoomType: 'x',
+            backgroundColor: '#f3f3f3'
+          },
+          title: {
+            text: 'Jobs per user, queued (drag to zoom)',
+            style: { fontFamily: '\'Source Sans Pro\', sans-serif',
+                     fontSize: '16px', color: '#000000' }
+          },
+          credits: {
+            enabled: false
+          },
+          xAxis: {
+            type: 'datetime'
+          },
+          yAxis: {
+            maxPadding: 0,
+            endOnTick: false,
+            title: { text: null }
+          },
+          plotOptions: {
+            area: {
+              stacking: 'normal',
+              animation: false,
+              marker: { enabled: false },
+              lineWidth: 0,
+              symbol: 'circle',
+              fillOpacity: 1,
+              enableMouseTracking: true
+            }
+          },
+          tooltip: {
+            shared: true
+          },
+          series: series
+        });
+      });
+    });
+
+    window.setTimeout(function() { window.location.href = window.location.href; }, 60*60000);
+    </script>
+
+  </body>
+
+</html>
+
