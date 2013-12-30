@@ -100,13 +100,14 @@ class Qstat
           state = fields["state"]
           state = "z" if job_list["state"] == "zombie"
           job_name = fields["JB_name"]
+          queue_name = fields["queue_name"].to_s[/^([a-z]+)@node/, 1]
           running_queue = fields["queue"]
           hard_req_queue = fields["hard_req_queue"]
           start_time = fields["JAT_start_time"]
           submission_time = fields["JB_submission_time"]
           prio = fields["JAT_prio"]
    
-          queue = (running_queue || hard_req_queue)
+          queue = (queue_name || running_queue || hard_req_queue)
           job_id = "#{ job_number }.#{ tasks || "1" }"
 
           unless job_name == "QRLOGIN"
