@@ -108,11 +108,17 @@ class Qstat
           prio = fields["JAT_prio"]
    
           queue = (queue_name || running_queue || hard_req_queue)
+          if tasks
+            job_id_display = "#{ job_number }.#{ tasks }"
+          else
+            job_id_display = "#{ job_number }"
+          end
           job_id = "#{ job_number }.#{ tasks || "1" }"
 
           unless job_name == "QRLOGIN"
             stats[queue][state] << {
               :job_id=>job_id,
+              :job_id_display=>job_id_display,
               :owner=>owner,
               :owner_id=>(user_id_list ? user_id_list.user_to_id(owner) : nil),
               :prio=>prio,

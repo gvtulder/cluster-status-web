@@ -405,7 +405,7 @@
         var tr = document.createElement('tr'),
             td;
         td = document.createElement('td');
-        td.appendChild(document.createTextNode(jobsForUser[i].job_id));
+        td.appendChild(document.createTextNode(jobsForUser[i].job_id_display));
         tr.appendChild(td);
         td = document.createElement('td');
         td.appendChild(document.createTextNode(jobsForUser[i].job_name));
