@@ -99,6 +99,8 @@ class Qstat
           owner = fields["JB_owner"]
           state = fields["state"]
           state = "z" if job_list["state"] == "zombie"
+          # move hold+running to the running group
+          state = "r" if state == "hr"
           job_name = fields["JB_name"]
           queue_name = fields["queue_name"].to_s[/^([a-z]+)@node/, 1]
           running_queue = fields["queue"]
