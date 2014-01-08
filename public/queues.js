@@ -403,9 +403,12 @@
       var tbody = document.createElement('tbody');
       for (var i=0; i<jobsForUser.length; i++) {
         var tr = document.createElement('tr'),
-            td;
+            td, a;
         td = document.createElement('td');
-        td.appendChild(document.createTextNode(jobsForUser[i].job_id_display));
+        a = document.createElement('a');
+        a.href = '/memory/'+jobsForUser[i].job_id;
+        a.appendChild(document.createTextNode(jobsForUser[i].job_id_display));
+        td.appendChild(a);
         tr.appendChild(td);
         td = document.createElement('td');
         td.appendChild(document.createTextNode(jobsForUser[i].job_name));

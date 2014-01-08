@@ -210,6 +210,13 @@ table.job-details td:last-child {
 .job-details tr:nth-child(odd) td {
   background: #e5e5e5;
 }
+table.job-details td a {
+  text-decoration: none;
+  color: #000;
+}
+table.job-details td a:hover {
+  text-decoration: underline;
+}
 #detailed-job-list {
   display: none;
 }

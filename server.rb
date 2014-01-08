@@ -122,6 +122,12 @@ get "/memory" do
       }
 end
 
+get "/memory/:job_id" do |job_id|
+  dates = History.available_dates
+  date = dates.last
+  redirect "/memory/#{ date }/#{ job_id }"
+end
+
 get "/memory/:date/" do |date|
   dates = History.available_dates
   raise "Invalid date" unless dates.include?(date)
