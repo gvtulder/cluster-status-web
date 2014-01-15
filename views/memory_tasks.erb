@@ -178,7 +178,7 @@
               <td><a href="/memory/<%= date %>/<%=h job_id %>"><%=h job_id %></a></td>
             <% end %>
             <td><%=h job["owner"] %></td>
-            <td><%=h job["job_name"] %></td>
+            <td title="<%=h job["job_name"] %>"><%=h job["job_name"] %></td>
             <td><%=h job["job_project"].to_s.sub(/^p[0-9]+_/, "") %></td>
             <%=
               # memory
