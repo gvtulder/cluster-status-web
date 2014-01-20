@@ -374,9 +374,14 @@ table.total-cluster-mbar td:last-child div.num {
   padding: 5px 12px;
 }
 .matlab-licenses h1 {
+  clear: both;
   margin: 0.1em 0 0.6em 0;
+  padding-top: 1em;
   font-size: 1.5em;
   font-weight: bold;
+}
+.matlab-licenses h1:first-child {
+  padding-top: 0;
 }
 .matlab-licenses h2 {
   padding: 3px;
@@ -387,13 +392,13 @@ table.total-cluster-mbar td:last-child div.num {
   color: #000;
 }
 .matlab-licenses .toolboxes {
-  max-width: 900px;
+  max-width: 1200px;
 }
 .matlab-licenses .toolboxes > li {
   display: block;
   float: left;
   width: 200px;
-  margin: 0 5px 14px 0;
+  margin: 0;
   padding: 4px;
   border-radius: 4px;
   -webkit-border-radius: 4px;

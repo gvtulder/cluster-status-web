@@ -77,7 +77,12 @@ get "/queue-stats.json" do
 end
 
 get "/matlab" do
-  erb :matlab, :locals=>{ :toolboxes=>MatlabLicense.toolboxes, :only_content=>params[:only_content] }
+  per_version = %w{ R2011b R2013b }.map do |version|
+    [ version, MatlabLicense.toolboxes(version) ]
+  end
+  erb :matlab, :locals=>{
+    :toolboxes_per_version=>per_version,
+    :only_content=>params[:only_content] }
 end
 
 get "/chart" do

@@ -1,8 +1,13 @@
 require "rubygems"
 
 class MatlabLicense
-  def self.toolboxes
-    txt = IO.popen("/cm/shared/apps/matlab/v716/bin/glnxa64/lmutil lmstat -a -c /cm/shared/apps/matlab/v716/licenses/network.lic") do |io|
+  LICENSE_CMD = {
+    "R2011b"=>"/cm/shared/apps/matlab/v716/bin/glnxa64/lmutil lmstat -a -c /cm/shared/apps/matlab/v716/licenses/network.lic",
+    "R2013b"=>"/cm/shared/apps/matlab/R2013b/etc/glnxa64/lmutil lmstat -a -c /cm/shared/apps/matlab/R2013b/licenses/network.lic"
+  }
+
+  def self.toolboxes(version)
+    txt = IO.popen(LICENSE_CMD[version]) do |io|
       io.read
     end
 
@@ -18,7 +23,7 @@ class MatlabLicense
           :users=>[]
         }
         toolboxes << current_toolbox
-      when /^    (\S+) .+ \(matlab\.erasmusmc\.nl/
+      when /^    (\S+) .+ \((matlab|r2013b)\.erasmusmc\.nl/
         if current_toolbox
           current_toolbox[:users] << $1
         end

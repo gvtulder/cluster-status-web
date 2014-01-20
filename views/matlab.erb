@@ -8,9 +8,16 @@
     <link rel="stylesheet" type="text/css" href="/reset.css" />
     <link rel="stylesheet" type="text/css" href="/cluster.css" />
     <script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
+    <script type="text/javascript" src="packery.pkgd.min.js"></script>
     <script type="text/javascript">
     <!--
     (function() {
+      function runPackery() {
+        $$('ul.toolboxes').each(function(toolboxes) {
+          new Packery(toolboxes, { itemSelector: 'ul.toolboxes > li', gutter: 5 } );
+        });
+      }
+
       window.addEvent('domready', function() {
         window.setInterval(function() {
           new Request.HTML({
@@ -26,9 +33,13 @@
               if (m < 10) m = '0'+m;
               if (s < 10) s = '0'+s;
               $('timestamp').innerHTML = h+':'+m+':'+s;
+
+              runPackery();
             }
           }).get();
         }, 300000);
+
+        runPackery();
       });
     }());
     -->
@@ -45,26 +56,28 @@
     <div class="matlab-licenses" id="matlab-licenses-container">
 <% end %>
 
-      <h1>Matlab licenses</h1>
+      <% toolboxes_per_version.each do |version, toolboxes| %>
+        <h1>Matlab licenses &ndash; <%=h version %></h1>
 
-      <ul class="toolboxes">
-        <%
-        toolboxes.sort_by do |stats|
-          stats[:licenses_issued].to_i
-        end.reverse.each do |stats| %>
-          <li>
-            <h2><strong><%=h stats[:toolbox].gsub("_"," ") %></strong> &nbsp; <%= stats[:licenses_used] %>/<%= stats[:licenses_issued] %></h2>
-            <ul class="users">
-              <% stats[:users].each do |user| %>
-                <li class="in-use"><%=h user.capitalize %></li>
-              <% end %>
-              <% (stats[:licenses_issued].to_i - stats[:licenses_used].to_i).times do %>
-                <li class="available">available</li>
-              <% end %>
-            </ul>
-          </li>
-        <% end %>
-      </ul>
+        <ul class="toolboxes">
+          <%
+          toolboxes.sort_by do |stats|
+            stats[:licenses_issued].to_i
+          end.reverse.each do |stats| %>
+            <li>
+              <h2><strong><%=h stats[:toolbox].gsub("_"," ").gsub("Distrib Computing Toolbox", "Distributed Computing") %></strong> &nbsp; <%= stats[:licenses_used] %>/<%= stats[:licenses_issued] %></h2>
+              <ul class="users">
+                <% stats[:users].each do |user| %>
+                  <li class="in-use"><%=h user.capitalize %></li>
+                <% end %>
+                <% (stats[:licenses_issued].to_i - stats[:licenses_used].to_i).times do %>
+                  <li class="available">available</li>
+                <% end %>
+              </ul>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
 
 <% unless only_content %>
     </div>
