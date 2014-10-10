@@ -425,3 +425,106 @@ table.total-cluster-mbar td:last-child div.num {
   color: #888;
 }
 
+#resources-container {
+  padding: 5px 12px;
+}
+#resources-container h1 {
+  clear: both;
+  margin: 0.1em 0 0.6em 0;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+.quota-block {
+  max-width: 1000px;
+  margin: 0 0 10px 0;
+  padding: 4px;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  background: #ddd;
+}
+.quota-block h2 {
+  padding: 3px;
+  margin-bottom: 5px;
+  font-size: 16px;
+  color: #888;
+}
+.quota-block .resource-quota {
+  margin: 3px 3px 3px 3px;
+}
+ 
+.meter { 
+  height: 20px;
+  position: relative;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+  -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+}
+.meter > span.bar {
+  display: block;
+  height: 100%;
+  background-color: #5cb85c;
+  -moz-box-shadow: inset 0 -1px 0 rgba(0,0,0,.10);
+  -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.10);
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.10);
+  position: relative;
+  overflow: hidden;
+}
+.meter-80 > span.bar {
+  background-color: #f0ad4e;
+}
+.meter-90 > span.bar {
+  background-color: #d9534f;
+}
+.meter > span.label {
+  display: block;
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-size: 80%;
+}
+
+.resource-quota {
+  width: 100%;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+}
+.resource-quota tbody tr:last-child th,
+.resource-quota tbody tr:last-child td {
+  padding-bottom: 15px;
+}
+.resource-quota tbody:last-child tr:last-child th,
+.resource-quota tbody:last-child tr:last-child td {
+  padding-bottom: 0;
+}
+.resource-quota th, .resource-quota td {
+  padding-bottom: 3px;
+}
+.resource-quota th {
+  font-size: 90%;
+  text-align: left;
+  vertical-align: middle;
+}
+.resource-quota th.node,
+.resource-quota th.queue-all-users,
+.resource-quota th.user {
+  width: 140px;
+}
+.resource-quota th.user-queue {
+  text-align: right;
+  color: #888;
+  padding-right: 5px;
+}
+.resource-quota td {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+
+

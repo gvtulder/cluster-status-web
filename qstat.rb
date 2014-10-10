@@ -148,5 +148,60 @@ class Qstat
       end
     end
   end
+
+  QUEUE_ORDER = %w{ hour day week month }
+  RESOURCE_ORDER = %w{ slots h_vmem }
+
+  def self.resources_per_host
+    doc = IO.popen(["qhost","-F","-xml"]) do |io|
+      Nokogiri::XML(io)
+    end
+
+    hosts = {}
+
+    doc.xpath("/qhost/host").each do |host_el|
+      host_data = { :name=> host_el["name"], :hostvalues=>{}, :resourcevalues=>{} }
+      hosts[host_data[:name]] = host_data
+
+      host_el.xpath("hostvalue").each do |el|
+        host_data[:hostvalues][el["name"]] = el.text
+      end
+      host_el.xpath("resourcevalue").each do |el|
+        host_data[:resourcevalues][el["name"]] = el.text
+      end
+    end
+
+    hosts
+  end
+
+  def self.quota
+    doc = IO.popen(["qquota","-u","*","-xml"]) do |io|
+      Nokogiri::XML(io)
+    end
+    # there might be a bug in qquota: it declares an xmlns pointing to the xsd
+    doc.remove_namespaces!
+
+    rules = doc.xpath("/qquota_result/qquota_rule").map do |el|
+      limits = el.xpath("limit").map do |limit_el|
+        { :resource=>limit_el["resource"], :limit=>limit_el["limit"], :value=>limit_el["value"] }
+      end
+      queues = el.xpath("queues").map(&:text).sort_by { |q| QUEUE_ORDER.index(q) }
+      users = el.xpath("users").map(&:text) - ["*"]
+
+      if queues == ["day","week","month"] or queues == QUEUE_ORDER
+        queues = []
+      end
+
+      { :limits=>limits, :queues=>queues, :users=>users }
+    end
+
+    rules = rules.sort_by do |rule|
+      [ rule[:users].empty? ? "AAAAAAAAAAAAAAAA" : rule[:users].to_s,
+        rule[:limits].map{ |l| RESOURCE_ORDER.index(l[:resource]) },
+        rule[:queues].size,
+        rule[:queues].map{ |q| QUEUE_ORDER.index(q) },
+      ]
+    end
+  end
 end
 

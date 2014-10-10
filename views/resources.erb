@@ -1,0 +1,191 @@
+<%
+
+  def memory_to_num(mem_str)
+    num = mem_str[/[.0-9]+/].to_f
+    case mem_str[/[GMK]/i].to_s.upcase
+    when "G"
+      num * 1024*1024*1024
+    when "M"
+      num * 1024*1024
+    when "K"
+      num * 1024
+    else
+      num
+    end
+  end
+
+  def num_to_memory(mem_val)
+    if mem_val > 1024 * 1024 * 1024
+      (mem_val / (1024 * 1024 * 1024)).round.to_s + "G"
+    elsif mem_val > 1024 * 1024
+      (mem_val / (1024 * 1024)).round.to_s + "M"
+    elsif mem_val > 1024
+      (mem_val / 1024).round.to_s + "K"
+    else
+      mem_val.round.to_s
+    end
+  end
+
+  def progress_bar(cur_value, max_value, label)
+    percentage = 100.0 * (cur_value.to_f / max_value.to_f)
+    percentage = 0.0 if percentage < 0
+    percentage = 100.0 if percentage > 100
+    classname = "meter"
+    classname = "meter meter-80" if percentage > 80
+    classname = "meter meter-90" if percentage > 90
+    "<div class=\"#{ classname }\"><span class=\"bar\" style=\"width: #{ percentage }%;\"></span><span class=\"label\">#{ label }</span></div>"
+  end
+
+%>
+<% unless only_content %>
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Resources</title>
+    <link rel="stylesheet" type="text/css" href="/reset.css" />
+    <link rel="stylesheet" type="text/css" href="/cluster.css?1" />
+    <script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
+    <script type="text/javascript" src="packery.pkgd.min.js"></script>
+    <script type="text/javascript">
+    <!--
+    (function() {
+      window.addEvent('domready', function() {
+        window.setInterval(function() {
+          new Request.HTML({
+            url: '/resources?only_content=true',
+            noCache: true,
+            update: $('resources-container'),
+            onSuccess: function() {
+              var d=new Date(),
+                  h=d.getHours(),
+                  m=d.getMinutes(),
+                  s=d.getSeconds();
+              if (h < 10) m = '0'+h;
+              if (m < 10) m = '0'+m;
+              if (s < 10) s = '0'+s;
+              $('timestamp').innerHTML = h+':'+m+':'+s;
+            }
+          }).get();
+        }, 300000);
+      });
+    }());
+    -->
+    </script>
+  </head>
+
+  <body>
+
+    <div id="header">
+      <p><span>Resources</span><span id="timestamp"><%= Time.now.localtime.strftime("%H:%M:%S") %></span></p>
+      <p class="nav"><a href="/queues">Queues</a><a href="/chart">History</a><a href="/memory">Memory</a><a href="/matlab">Matlab</a></p>
+    </div>
+
+    <div id="resources-container">
+<% end %>
+
+      <h1>Resources</h1>
+
+      <div class="quota-block">
+        <h2>Hosts</h2>
+        <table class="resource-quota">
+          <tbody>
+<%
+  Qstat.resources_per_host.each do |host_name, host_data|
+    if host_name =~ /(node[0-9]+)/
+      node_name = $1
+      %>
+            <tr><th class="node" scope="row"><%=h node_name %></th>
+      <%
+      num_proc = host_data[:hostvalues]["num_proc"].to_i
+      slots_available = host_data[:resourcevalues]["slots"].to_i
+      slots_used = num_proc - slots_available
+      label = "  #{ slots_used } of #{ num_proc } slots"
+      %><td><%= progress_bar(slots_used, num_proc, label) %></td><%
+
+      mem_total = memory_to_num(host_data[:hostvalues]["mem_total"])
+      vmem_available = memory_to_num(host_data[:resourcevalues]["h_vmem"])
+      vmem_used = mem_total - vmem_available
+      label = "#{ num_to_memory(vmem_used) } of #{ num_to_memory(mem_total) }"
+      %><td><%= progress_bar(vmem_used, mem_total, label) %></td><%
+
+      %></tr><%
+    end
+  end
+%>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="quota-block">
+        <h2>Queues</h2>
+        <table class="resource-quota">
+          <tbody>
+<%
+  previous_user = nil
+  Qstat.quota.each do |rule|
+    if rule[:users].empty?
+      %><tr><th class="queue-all-users" scope="row"><%=h rule[:queues].join(" and ") %></th><%
+    else
+      if previous_user == rule[:users]
+        %><tr><%
+        if rule[:queues].empty?
+          %><th>&nbsp;</th><%
+        else
+          %><th scope="row" class="user-queue"><%= rule[:queues].join(" and ") %></th><%
+        end
+      else
+        if previous_user.nil?
+          %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="quota-block">
+        <h2>Users</h2>
+        <table class="resource-quota">
+          <tbody>
+          <%
+        else
+          %></tbody><tbody><%
+        end
+
+        %><tr><th class="user" scope="rowgroup"><%=h rule[:users].join(" and ") %></th><%
+        previous_user = rule[:users]
+      end
+    end
+
+    rule[:limits].each do |limit|
+      resource_name = limit[:resource]
+      max_value = limit[:limit].to_i
+      cur_value = limit[:value].to_i
+
+      case resource_name
+      when "slots"
+        label = "#{ limit[:value] } of #{ limit[:limit] } slots"
+      when "h_vmem"
+        label = "#{ limit[:value].gsub(/\.?0+(.)$/,"\\1") } of #{ limit[:limit].gsub(/\.?0+(.)$/,"\\1") }"
+        max_value = memory_to_num(limit[:limit])
+        cur_value = memory_to_num(limit[:value])
+      else
+        label = "#{ limit[:value] } of #{ limit[:limit] } #{ resource_name }"
+      end
+      %><td><%= progress_bar(cur_value, max_value, label) %></td><%
+    end
+
+    %></tr><%
+  end
+%>
+          </tbody>
+        </table>
+      </div>
+
+<% unless only_content %>
+    </div>
+
+  </body>
+
+</html>
+<% end %>
+

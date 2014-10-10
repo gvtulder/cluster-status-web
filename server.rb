@@ -85,6 +85,11 @@ get "/matlab" do
     :only_content=>params[:only_content] }
 end
 
+get "/resources" do
+  erb :resources, :locals=>{
+    :only_content=>params[:only_content] }
+end
+
 get "/chart" do
   redirect "/chart/2"
 end
