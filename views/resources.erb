@@ -31,8 +31,8 @@
     percentage = 0.0 if percentage < 0
     percentage = 100.0 if percentage > 100
     classname = "meter"
-    classname = "meter meter-80" if percentage > 80
-    classname = "meter meter-90" if percentage > 90
+    classname = "meter meter-80" if percentage > 90
+    classname = "meter meter-90" if percentage > 95
     "<div class=\"#{ classname }\"><span class=\"bar\" style=\"width: #{ percentage }%;\"></span><span class=\"label\">#{ label }</span></div>"
   end
 
