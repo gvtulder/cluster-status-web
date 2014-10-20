@@ -37,17 +37,7 @@
 
     <script type="text/javascript">
     $(function () { 
-      var COLORS = [
-            '#AA5567','#5D8A2A','#437EA5',
-            '#986D1B','#B860A8','#41845C',
-            '#B95937','#68643E','#825682',
-            '#83493E','#2D6461','#8F6A6F',
-            '#CA5080','#686921','#C64C5A',
-            '#3C566E','#355C37','#8E5E35',
-            '#64787E','#457A39','#74415B',
-            '#8A69A9','#A2527C','#6076AB',
-            '#5F5375','#488579','#417F94',
-            '#A36D93','#535254','#AD5A95'];
+      var COLORS = [ <%= COLORS.map{|c|"'#{c}'"}.join(",") %> ];
 
       $.getJSON('/chart-data-<%= days %>.json?r='+Math.random(), function(data) {
         var series = [];

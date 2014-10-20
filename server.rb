@@ -43,6 +43,27 @@ end
 
 $QSTAT_USER_IDS = UserIDs.new
 
+## CSS with user colors (for the queue view)
+# iwanthue
+# H 0 - 360
+# C 0.3 - 1.7
+# L 0.3 - 0.8
+COLORS = %w{ #AA5567 #5D8A2A #437EA5
+             #986D1B #B860A8 #41845C
+             #B95937 #68643E #825682
+             #83493E #2D6461 #8F6A6F
+             #CA5080 #111111 #C64C5A
+             #3C566E #355C37 #8E5E35
+             #64787E #457A39 #74415B
+             #8A69A9 #A2527C #6076AB
+             #5F5375 #488579 #417F94
+             #A36D93 #535254 #AD5A95 }
+COLORS_CSS =
+  COLORS.each_with_index.map do |c,i|
+    ".all-owners .owner-#{ i }, .only-owner-#{ i } .owner-#{ i } {background-color:#{ c } !important;}\n"
+  end.join
+
+
 
 
 set :environment, :production
@@ -95,7 +116,7 @@ get "/chart" do
 end
 
 get "/chart/:days" do |days|
-  erb :chart, :locals=>{ :days=>days }
+  erb :chart, :locals=>{ :days=>days, :colors=>COLORS }
 end
 
 get "/chart-data.json" do
@@ -211,26 +232,6 @@ get "/memory/:date/:job_id" do |date, job_id|
       }
 end
 
-
-## CSS with user colors (for the queue view)
-# iwanthue
-# H 0 - 360
-# C 0.3 - 1.7
-# L 0.3 - 0.8
-COLORS = %w{ #AA5567 #5D8A2A #437EA5
-             #986D1B #B860A8 #41845C
-             #B95937 #68643E #825682
-             #83493E #2D6461 #8F6A6F
-             #CA5080 #111111 #C64C5A
-             #3C566E #355C37 #8E5E35
-             #64787E #457A39 #74415B
-             #8A69A9 #A2527C #6076AB
-             #5F5375 #488579 #417F94
-             #A36D93 #535254 #AD5A95 }
-COLORS_CSS = 
-  COLORS.each_with_index.map do |c,i|
-    ".all-owners .owner-#{ i }, .only-owner-#{ i } .owner-#{ i } {background-color:#{ c } !important;}\n"
-  end.join
 
 get "/user-colors.css" do
   content_type :css
