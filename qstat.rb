@@ -33,7 +33,17 @@ class Qstat
       f.read
     end
 
-    doc = Nokogiri::XML(xml_str)
+    # qstat may produce invalid XML: for jobs in error state
+    # it adds elements like this
+    #
+    # <JATASK:  631165.>
+    #   <JAT_status>128</JAT_status>
+    #   <JAT_task_number>1</JAT_task_number>
+    # </JATASK:  631165.>
+
+    xml_str = xml_str.gsub(/<JATASK:\s*[.0-9]+>.+?<\/JATASK:\s*[.0-9]+>/m, "")
+
+    doc = Nokogiri::XML(xml_str, nil, nil, Nokogiri::XML::ParseOptions::STRICT)
     doc.xpath("/detailed_job_info/djob_info/element").each do |element|
       # collect info about the job
       job_data = {}
