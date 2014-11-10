@@ -29,48 +29,51 @@ class Qstat
   # hash of job_id => job details
   def self.job_details(job_ids)
     jobs = {}
-    IO.popen([ "qstat", "-j", job_ids.join(","), "-xml" ]) do |f|
-      doc = Nokogiri::XML(f)
-      doc.xpath("/detailed_job_info/djob_info/element").each do |element|
-        # collect info about the job
-        job_data = {}
-        element.children.each do |child|
-          case child.name
-          when "JB_job_number", "JB_owner", "JB_job_name", "JB_project", "JB_submission_time", "JB_start_time"
-            job_data[child.name] = child.text.delete(" \t\r\n")
-          when "JB_hard_resource_list"
-            job_data["vmem_request"] = child.text_at_xpath("qstat_l_requests[CE_name='h_vmem']/CE_doubleval")
-          end
-        end
-        job_number = job_data["JB_job_number"]
-
-        # collect info about tasks in this job
-        tasks = {}
-        element.xpath("JB_ja_tasks/ulong_sublist").each do |task|
-          task_number = task.text_at_xpath("JAT_task_number")
-          uas = {}
-          # task resource usage
-          task.xpath("JAT_scaled_usage_list/scaled").each do |ua|
-            ua_name, ua_value = nil, nil
-            ua.children.each do |ua_child|
-              case ua_child.name
-              when "UA_name"
-                ua_name = ua_child.text
-              when "UA_value"
-                ua_value = ua_child.text
-              end
-            end
-            uas[ua_name] = ua_value
-          end
-          tasks[task_number] = uas
-        end
-        job_data["tasks"] = tasks
-
-        # add to the list
-        job_ids << job_number
-        jobs[job_number] = job_data
-      end
+    xml_str = IO.popen([ "qstat", "-j", job_ids.join(","), "-xml" ]) do |f|
+      f.read
     end
+
+    doc = Nokogiri::XML(xml_str)
+    doc.xpath("/detailed_job_info/djob_info/element").each do |element|
+      # collect info about the job
+      job_data = {}
+      element.children.each do |child|
+        case child.name
+        when "JB_job_number", "JB_owner", "JB_job_name", "JB_project", "JB_submission_time", "JB_start_time"
+          job_data[child.name] = child.text.delete(" \t\r\n")
+        when "JB_hard_resource_list"
+          job_data["vmem_request"] = child.text_at_xpath("qstat_l_requests[CE_name='h_vmem']/CE_doubleval")
+        end
+      end
+      job_number = job_data["JB_job_number"]
+
+      # collect info about tasks in this job
+      tasks = {}
+      element.xpath("JB_ja_tasks/ulong_sublist").each do |task|
+        task_number = task.text_at_xpath("JAT_task_number")
+        uas = {}
+        # task resource usage
+        task.xpath("JAT_scaled_usage_list/scaled").each do |ua|
+          ua_name, ua_value = nil, nil
+          ua.children.each do |ua_child|
+            case ua_child.name
+            when "UA_name"
+              ua_name = ua_child.text
+            when "UA_value"
+              ua_value = ua_child.text
+            end
+          end
+          uas[ua_name] = ua_value
+        end
+        tasks[task_number] = uas
+      end
+      job_data["tasks"] = tasks
+
+      # add to the list
+      job_ids << job_number
+      jobs[job_number] = job_data
+    end
+
     jobs
   end
 
