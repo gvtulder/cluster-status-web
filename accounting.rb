@@ -10,7 +10,8 @@ require "./user_ids"
 outfile = ARGV[0]
 days = (ARGV[1] || 21).to_i
 
-LOG = "/cm/shared/apps/sge/6.2u5p2/default/common/accounting"
+# LOG = "/cm/shared/apps/sge/6.2u5p2/default/common/accounting"
+LOG = "/cm/shared/apps/sge/var/default/common/accounting"
 
 COLS = %w{ qname hostname group owner job_name job_number account priority submission_time start_time end_time failed exit_status ru_wallclock project department granted_pe slots task_number cpu mem io category iow pe_taskid maxvmem arid ar_submission_time }.map(&:to_sym)
 COL_IDX = Hash[COLS.each_with_index.to_a]
