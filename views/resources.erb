@@ -168,7 +168,7 @@
       when "slots"
         label = "#{ limit[:value] } of #{ limit[:limit] } slots"
       when "h_vmem"
-        label = "#{ limit[:value].gsub(/\.?0+(.)$/,"\\1") } of #{ limit[:limit].gsub(/\.?0+(.)$/,"\\1") }"
+        label = "#{ limit[:value].gsub(/\.[0-9]*(.)$/,"\\1") } of #{ limit[:limit].gsub(/\.[0-9]*(.)$/,"\\1") }"
         max_value = memory_to_num(limit[:limit])
         cur_value = memory_to_num(limit[:value])
       else
