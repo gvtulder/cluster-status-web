@@ -15,6 +15,9 @@
   end
 
   def num_to_memory(mem_val)
+    neg = (mem_val < 0) ? "-" : ""
+    mem_val = mem_val.abs
+    neg +
     if mem_val > 1024 * 1024 * 1024
       (mem_val / (1024 * 1024 * 1024)).round.to_s + "G"
     elsif mem_val > 1024 * 1024
