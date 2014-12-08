@@ -53,6 +53,8 @@ class Qstat
           job_data[child.name] = child.text.delete(" \t\r\n")
         when "JB_hard_resource_list"
           job_data["vmem_request"] = child.text_at_xpath("qstat_l_requests[CE_name='h_vmem']/CE_doubleval")
+        when "JB_pe_range"
+          job_data["nslots"] = child.text_at_xpath("ranges/RN_max").to_i
         end
       end
       job_number = job_data["JB_job_number"]

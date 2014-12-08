@@ -45,7 +45,7 @@
         <%=
           mems = stats.map do |job|
             # cur               max                  req
-            [ job["vmem"].to_f, job["maxvmem"].to_f, job["vmem_request"].to_f ]
+            [ job["vmem"].to_f, job["maxvmem"].to_f, job["vmem_request"].to_f * (job["n_slots"] || 1).to_i ]
           end
 
           max_mem = mems.map{|a|a.max}.max || 1
@@ -81,7 +81,7 @@
           mems = stats.map do |job|
             total_cur += job["vmem"].to_f
             total_max += job["maxvmem"].to_f
-            total_req += job["vmem_request"].to_f
+            total_req += job["vmem_request"].to_f * (job["n_slots"] || 1).to_i
           end
 
           max_mem = 1024*1024*1024*1260
@@ -130,7 +130,7 @@
           <th>Job</th>
           <th>Owner</th>
           <th>Name</th>
-          <th>Queue</th>
+          <th class="r">Slots</th>
           <th class="r">VMemRequested</th>
           <th class="r">VMemCurrent</th>
           <th class="r">VMemMax</th>
@@ -142,7 +142,6 @@
             <td><input type="search" placeholder="Filter" class="filter" size="1" name="jobid" value="<%=h params["jobid"] %>" /></td>
             <td><input type="search" placeholder="Filter" class="filter" size="1" name="owner" value="<%=h params["owner"] %>" /></td>
             <td><input type="search" placeholder="Filter" class="filter" size="1" name="jobname" value="<%=h params["jobname"] %>" /></td>
-            <td><input type="search" placeholder="Filter" class="filter" size="1" name="queue" value="<%=h params["queue"] %>" /></td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
@@ -179,20 +178,17 @@
             <% end %>
             <td><%=h job["owner"] %></td>
             <td title="<%=h job["job_name"] %>"><%=h job["job_name"] %></td>
-            <td><%=h job["job_project"].to_s.sub(/^p[0-9]+_/, "") %></td>
-            <%=
-              # memory
-              %w{ vmem_request vmem maxvmem }.map do |i|
-                "<td class=\"r\">#{ format_mem(job[i]) } MB</td>"
-              end.join
-            %>
+            <td class="r"><%=h job["n_slots"] %></td>
+            <td class="r"><%= format_mem(job["vmem_request"]) %> MB</td>
+            <td class="r"><%= format_mem(job["vmem"]) %> MB</td>
+            <td class="r"><%= format_mem(job["maxvmem"]) %> MB</td>
             <td class="mbar"><nobr><%
               # vmem current
               vmem_cur_pix = (200 * (job["vmem"].to_f / (1024*1024*1024*12))).to_i
               # vmem max
               vmem_max_pix = (200 * (job["maxvmem"].to_f / (1024*1024*1024*12))).to_i
               # vmem requested
-              vmem_req_pix = (200 * (job["vmem_request"].to_f  / (1024*1024*1024*12))).to_i
+              vmem_req_pix = (200 * (job["vmem_request"].to_f * (job["n_slots"] || 1).to_i / (1024*1024*1024*12))).to_i
               %><span class="mbar-cur" style="width: <%= vmem_cur_pix %>px"></span><%
               if vmem_max_pix > vmem_cur_pix
                 %><span class="mbar-max" style="width: <%= vmem_max_pix - vmem_cur_pix %>px"></span><%

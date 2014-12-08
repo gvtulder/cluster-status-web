@@ -199,6 +199,7 @@ get "/memory/:date/:job_id.json" do |date, job_id|
     "iow"=>job_data["iow"].to_f,
     "vmem"=>job_data["vmem"].to_i,
     "maxvmem"=>job_data["maxvmem"].to_i,
+    "n_slots"=>job_data["n_slots"],
     "job_project"=>job_data["job_project"].to_s.sub(/^p[0-9]+_/, "")
   }
   job_profile_js[:job_profile] = {}

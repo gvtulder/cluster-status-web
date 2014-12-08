@@ -68,14 +68,14 @@ class History
 
   def single_job_profile(job_id)
     @db.results_as_hash = true
-    @db.execute("select timestamp, cpu, mem, io, vmem, maxvmem from job_profiles where job_id = ? order by timestamp asc", job_id)
+    @db.execute("select timestamp, cpu, mem, io, vmem, maxvmem, n_slots from job_profiles where job_id = ? order by timestamp asc", job_id)
   end
 
   def store_job_stats(jobs, timestamp=nil)
     timestamp = Time.now.to_i if timestamp.nil?
     @db.transaction do
       # static job info
-      @db.prepare("insert or replace into jobs values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)") do |stmt|
+      @db.prepare("insert or replace into jobs values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)") do |stmt|
         jobs.each do |job_number, job_data|
           job_data["tasks"].each do |task_number, task_data|
             stmt.execute([
@@ -92,14 +92,15 @@ class History
               task_data["io"],
               task_data["iow"],
               task_data["vmem"],
-              task_data["maxvmem"]
+              task_data["maxvmem"],
+              job_data["nslots"]
             ])
           end
         end
       end
 
       # current resource stats
-      @db.prepare("insert or replace into job_profiles values (?,?,?,?,?,?,?,?)") do |stmt|
+      @db.prepare("insert or replace into job_profiles values (?,?,?,?,?,?,?,?,?)") do |stmt|
         jobs.each do |job_number, job_data|
           job_data["tasks"].each do |task_number, task_data|
             stmt.execute([
@@ -110,7 +111,8 @@ class History
               task_data["io"],
               task_data["iow"],
               task_data["vmem"],
-              task_data["maxvmem"]
+              task_data["maxvmem"],
+              job_data["nslots"]
             ])
           end
         end
@@ -125,13 +127,13 @@ class History
       create table if not exists jobs
         ( job_id, timestamp,
           job_number, task_number, owner, job_name, vmem_request, job_project,
-          cpu, mem, io, iow, vmem, maxvmem,
+          cpu, mem, io, iow, vmem, maxvmem, n_slots,
           primary key (job_id) on conflict replace )
     })
     @db.execute(%{
       create table if not exists job_profiles
         ( job_id, timestamp,
-          cpu, mem, io, iow, vmem, maxvmem,
+          cpu, mem, io, iow, vmem, maxvmem, n_slots,
           primary key (job_id, timestamp) on conflict replace )
     })
   end
