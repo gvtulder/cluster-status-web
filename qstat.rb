@@ -214,7 +214,7 @@ class Qstat
       [ rule[:users].empty? ? "AAAAAAAAAAAAAAAA" : rule[:users].to_s,
         rule[:limits].map{ |l| RESOURCE_ORDER.index(l[:resource]) },
         rule[:queues].size,
-        rule[:queues].map{ |q| QUEUE_ORDER.index(q) },
+        rule[:queues].map{ |q| QUEUE_ORDER.index(q) or 99 },
       ]
     end
   end
